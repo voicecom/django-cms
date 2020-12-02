@@ -675,6 +675,23 @@ class PagesTestCase(TransactionCMSTestCase):
         self.assertIsNotNone(found_page)
         self.assertFalse(found_page.publisher_is_draft)
 
+    def test_page_multiple_languages_in_cache(self):
+        root = create_page("root", "nav_playground.html", "en", slug="root", published=True)
+
+        create_title("fr", "french home", root, path="root")
+        create_title("de", "german home", root, path="root")
+
+        root.publish("fr")
+        root.publish("de")
+
+        request = self.get_request(root.get_absolute_url())
+        req_page = get_page_from_request(request)
+
+        self.assertIsNotNone(req_page)
+        self.assertIn("fr", req_page.title_cache)
+        self.assertIn("de", req_page.title_cache)
+
+
     def test_ancestor_expired(self):
         yesterday = tz_now() - datetime.timedelta(days=1)
         tomorrow = tz_now() + datetime.timedelta(days=1)
